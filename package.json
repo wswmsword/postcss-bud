@@ -1,0 +1,39 @@
+{
+  "name": "postcss-bud",
+  "version": "1.0.0",
+  "description": "一款 PostCSS 插件，居中视图。The viewport of data-visualization.",
+  "main": "index.js",
+  "types": "postcss-bud.d.ts",
+  "scripts": {
+    "test": "jest spec/*.spec.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wswmsword/postcss-bud.git"
+  },
+  "keywords": [
+    "css",
+    "units",
+    "css-function",
+    "viewport",
+    "postcss-plugin",
+    "responsive-design",
+    "desktop",
+    "bud",
+    "big-screen",
+    "data-visualization"
+  ],
+  "author": "wswmsword",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wswmsword/postcss-bud/issues"
+  },
+  "homepage": "https://github.com/wswmsword/postcss-bud#readme",
+  "devDependencies": {
+    "jest": "^29.4.3",
+    "postcss": "^8.4.21"
+  },
+  "peerDependencies": {
+    "postcss": "^8.0.0"
+  }
+}
