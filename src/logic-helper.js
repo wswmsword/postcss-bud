@@ -1,4 +1,4 @@
-const { containingBlockWidthProps } = require("./constants");
+const { containingBlockWidthProps, containingBlockHeightProps } = require("./constants");
 const { fixedUnitContentReg, unitContentMatchReg } = require("./regex");
 
 /** 获取匹配的数字和单位，转换 */
@@ -62,11 +62,19 @@ const createContainingBlockWidthDecls = () => {
     return prev.concat([[cur, null]]);
   }, []);
   return new Map(mapArray);
+};
+
+const createContainingBlockHeightDecls = () => {
+  const mapArray = containingBlockHeightProps.reduce((prev, cur) => {
+    return prev.concat([[cur, null]]);
+  }, []);
+  return new Map(mapArray);
 }
 
 module.exports = {
   hasNoneRootContainingBlockComment,
   hasRootContainingBlockComment,
   createContainingBlockWidthDecls,
+  createContainingBlockHeightDecls,
   convertValue,
 };

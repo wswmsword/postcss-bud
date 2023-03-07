@@ -1,5 +1,5 @@
-const { hasNoneRootContainingBlockComment, hasRootContainingBlockComment, createContainingBlockWidthDecls } = require("./src/logic-helper");
-const { convert, genRootSelector } = require("./src/css-generator");
+const { hasNoneRootContainingBlockComment, hasRootContainingBlockComment, createContainingBlockWidthDecls, createContainingBlockHeightDecls } = require("./src/logic-helper");
+const { convert, genRootSelector, convertWidthContainingBlock, convertHeightContainingBlock } = require("./src/css-generator");
 const { pxTestReg } = require("./src/regex");
 
 const defaults = {
@@ -35,8 +35,10 @@ module.exports = (options = {}) => {
       let viewWHRadio = null;
       /** 当前元素是否 fixed 定位？ */
       let hadFixed = null;
-      /** 依赖根包含块的属性 */
-      let containingBlockDeclsMap = null;
+      /** 依赖根包含块宽度的属性 */
+      let widthContainingBlockDeclsMap = null;
+      /** 依赖根包含块高度的属性 */
+      let heightContainingBlockDeclsMap = null;
 
 
       // 是否动态视图宽度？
@@ -56,7 +58,9 @@ module.exports = (options = {}) => {
         },
         Rule(rule, postcss) {
           hadFixed = false;
-          containingBlockDeclsMap = createContainingBlockWidthDecls();
+          widthContainingBlockDeclsMap = createContainingBlockWidthDecls();
+          heightContainingBlockDeclsMap = createContainingBlockHeightDecls();
+          
 
           selector = rule.selector;
 
@@ -67,7 +71,7 @@ module.exports = (options = {}) => {
 
           /** 有标志*非根包含块*的注释吗？ */
           const notRootContainingBlock = hasNoneRootContainingBlockComment(rule);
-          if (notRootContainingBlock) containingBlockDeclsMap = new Map();
+          if (notRootContainingBlock) widthContainingBlockDeclsMap = heightContainingBlockDeclsMap = new Map();
           /** 有标志*根包含块*的注释吗？ */
           const hadRootContainingBlock = hasRootContainingBlockComment(rule);
           if (hadRootContainingBlock) hadFixed = true;
@@ -82,10 +86,18 @@ module.exports = (options = {}) => {
           if (prop === "position" && val === "fixed") return hadFixed = true;
 
           // 涉及到包含块宽度的属性，推迟到 ruleExit 中计算
-          if (containingBlockDeclsMap.has(prop)) {
-            const mapDecl = containingBlockDeclsMap.get(prop);
+          if (widthContainingBlockDeclsMap.has(prop)) {
+            const mapDecl = widthContainingBlockDeclsMap.get(prop);
             if (mapDecl == null || important || !mapDecl.important)
-              containingBlockDeclsMap.set(prop, decl);
+              widthContainingBlockDeclsMap.set(prop, decl);
+            return;
+          }
+
+          // 涉及到包含块高度的属性，推迟到 ruleExit 中计算
+          if (heightContainingBlockDeclsMap.has(prop)) {
+            const mapDecl = heightContainingBlockDeclsMap.get(prop);
+            if (mapDecl == null || important || !mapDecl.important)
+              heightContainingBlockDeclsMap.set(prop, decl);
             return;
           }
 
@@ -93,7 +105,14 @@ module.exports = (options = {}) => {
             convert(decl, viewWidth, unitPrecision);
         },
         RuleExit(rule, postcss) {
-
+          widthContainingBlockDeclsMap.forEach(decl => {
+            if (decl == null) return;
+            convertWidthContainingBlock(decl, viewWidth, unitPrecision, hadFixed);
+          });
+          heightContainingBlockDeclsMap.forEach(decl => {
+            if (decl == null) return;
+            convertHeightContainingBlock(decl, viewHeight, unitPrecision, hadFixed);
+          });
         },
         OnceExit(css) {
         },

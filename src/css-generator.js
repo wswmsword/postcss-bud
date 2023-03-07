@@ -3,13 +3,13 @@ const { round } = require("./utils");
 const { convertValue } = require("./logic-helper");
 
 /** 转换高度包含块相关的属性 */
-function convertHeightContainingBlock(decl, viewportWidth, viewportHeight, precision, fixed) {
+function convertHeightContainingBlock(decl, viewportHeight, precision, fixed) {
   const prop = decl.prop;
   const val = decl.value;
 
   const topOrBottom = prop === "top" || prop === "bottom";
 
-  const convertedVal = convertValue(val, viewportWidth, precision, {
+  const convertedVal = convertValue(val, {
     convert(number, unit, numberStr) {
       if (unit === "px") {
         if (fixed) {
@@ -17,12 +17,12 @@ function convertHeightContainingBlock(decl, viewportWidth, viewportHeight, preci
             const rounded = round(number / viewportHeight, precision);
             return `calc(var(${yE}) + var(${vH}) * ${rounded})`;
           } else {
-            const radio = round(number / viewportWidth, precision);
-            return `calc(var(--vW) * ${radio})`;
+            const radio = round(number / viewportHeight, precision);
+            return `calc(var(${vH}) * ${radio})`;
           }
         } else {
-          const radio = round(number / viewportWidth, precision);
-          return `calc(var(--vW) * ${radio})`;
+          const radio = round(number / viewportHeight, precision);
+          return `calc(var(${vH}) * ${radio})`;
         }
       }
       else if (unit === "%") {
@@ -55,7 +55,7 @@ function convertWidthContainingBlock(decl, viewportWidth, precision, fixed) {
 
   const leftOrRight = prop === "left" || prop === "right";
 
-  const convertedVal = convertValue(val, viewportWidth, precision, {
+  const convertedVal = convertValue(val, {
     convert(number, unit, numberStr) {
       if (unit === "px") {
         if (fixed) {
@@ -94,10 +94,11 @@ function convertWidthContainingBlock(decl, viewportWidth, precision, fixed) {
   decl.value = convertedVal;
 }
 
+/** 转换属性值 */
 function convert(decl, viewportWidth, precision) {
   const val = decl.value;
 
-  const convertedVal = convertValue(val, viewportWidth, precision, {
+  const convertedVal = convertValue(val, {
     convert(number/* , unit, numberStr */) {
       const radio = round(number / viewportWidth, precision);
       return `calc(var(--vW) * ${radio})`;
