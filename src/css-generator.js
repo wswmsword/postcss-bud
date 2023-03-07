@@ -1,8 +1,111 @@
 const { vW, vH, yE, xE } = require("./constants");
 const { round } = require("./utils");
+const { convertValue } = require("./logic-helper");
 
-function replacePx() {
+/** 转换高度包含块相关的属性 */
+function convertHeightContainingBlock(decl, viewportWidth, viewportHeight, precision, fixed) {
+  const prop = decl.prop;
+  const val = decl.value;
 
+  const topOrBottom = prop === "top" || prop === "bottom";
+
+  const convertedVal = convertValue(val, viewportWidth, precision, {
+    convert(number, unit, numberStr) {
+      if (unit === "px") {
+        if (fixed) {
+          if (topOrBottom) {
+            const rounded = round(number / viewportHeight, precision);
+            return `calc(var(${yE}) + var(${vH}) * ${rounded})`;
+          } else {
+            const radio = round(number / viewportWidth, precision);
+            return `calc(var(--vW) * ${radio})`;
+          }
+        } else {
+          const radio = round(number / viewportWidth, precision);
+          return `calc(var(--vW) * ${radio})`;
+        }
+      }
+      else if (unit === "%") {
+        if (fixed) {
+          if (topOrBottom) {
+            return `calc(var(${yE}) + var(${vH}) * ${number})`;
+          } else {
+            return `calc(var(${vH}) * ${number})`;
+          }
+        } else {
+          return `${numberStr}${unit}`;
+        }
+      }
+      else if (unit === "" || unit === " ") {
+        if (fixed && topOrBottom && number === 0) return `var(${yE})`;
+        else return `${numberStr}${unit}`;
+      }
+      else return `${numberStr}${unit}`;
+    },
+    matchPercentage: fixed,
+  });
+  decl.book = true;
+  decl.value = convertedVal;
+}
+
+/** 转换宽度包含块相关的属性 */
+function convertWidthContainingBlock(decl, viewportWidth, precision, fixed) {
+  const prop = decl.prop;
+  const val = decl.value;
+
+  const leftOrRight = prop === "left" || prop === "right";
+
+  const convertedVal = convertValue(val, viewportWidth, precision, {
+    convert(number, unit, numberStr) {
+      if (unit === "px") {
+        if (fixed) {
+          if (leftOrRight) {
+            const rounded = round(number / viewportWidth, precision);
+            return `calc(var(${xE}) + var(${vW}) * ${rounded})`;
+          } else {
+            const radio = round(number / viewportWidth, precision);
+            return `calc(var(--vW) * ${radio})`;
+          }
+        } else {
+          const radio = round(number / viewportWidth, precision);
+          return `calc(var(--vW) * ${radio})`;
+        }
+      }
+      else if (unit === "%") {
+        if (fixed) {
+          if (leftOrRight) {
+            return `calc(var(${xE}) + var(${vW}) * ${number})`;
+          } else {
+            return `calc(var(${vW}) * ${number})`;
+          }
+        } else {
+          return `${numberStr}${unit}`;
+        }
+      }
+      else if (unit === "" || unit === " ") {
+        if (fixed && leftOrRight && number === 0) return `var(${xE})`;
+        else return `${numberStr}${unit}`;
+      }
+      else return `${numberStr}${unit}`;
+    },
+    matchPercentage: fixed,
+  });
+  decl.book = true;
+  decl.value = convertedVal;
+}
+
+function convert(decl, viewportWidth, precision) {
+  const val = decl.value;
+
+  const convertedVal = convertValue(val, viewportWidth, precision, {
+    convert(number/* , unit, numberStr */) {
+      const radio = round(number / viewportWidth, precision);
+      return `calc(var(--vW) * ${radio})`;
+    },
+    matchPercentage: false,
+  });
+  decl.book = true;
+  decl.value = convertedVal;
 }
 
 /** 生成根选择器，定义变量 */
@@ -14,18 +117,15 @@ function genRootSelector(Rule, viewportWidth, viewportHeight, unitPrecision) {
     prop: vW, // viewport width
     value: `min(calc(100vh * ${whRadio}), 100vw)`,
     book: true,
-  });
-  rootSelector.append({
+  }, {
     prop: vH, // viewport height
     value: `min(calc(100vw * ${hwRadio}), 100vh)`,
     book: true,
-  });
-  rootSelector.append({
+  }, {
     prop: yE, // column edge space
     value: "calc(50% - var(--vH) / 2)",
     book: true,
-  });
-  rootSelector.append({
+  }, {
     prop: xE, // row edge space
     value: "calc(50% - var(--vW) / 2)",
     book: true,
@@ -34,6 +134,8 @@ function genRootSelector(Rule, viewportWidth, viewportHeight, unitPrecision) {
 }
 
 module.exports = {
-  replacePx,
+  convert,
   genRootSelector,
+  convertHeightContainingBlock,
+  convertWidthContainingBlock,
 };

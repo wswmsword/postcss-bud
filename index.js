@@ -1,5 +1,5 @@
 const { hasNoneRootContainingBlockComment, hasRootContainingBlockComment, createContainingBlockWidthDecls } = require("./src/logic-helper");
-const { replacePx, genRootSelector } = require("./src/css-generator");
+const { convert, genRootSelector } = require("./src/css-generator");
 const { pxTestReg } = require("./src/regex");
 
 const defaults = {
@@ -89,9 +89,8 @@ module.exports = (options = {}) => {
             return;
           }
 
-          if (pxTestReg.test(val)) {
-            replacePx();
-          }
+          if (pxTestReg.test(val))
+            convert(decl, viewWidth, unitPrecision);
         },
         RuleExit(rule, postcss) {
 
