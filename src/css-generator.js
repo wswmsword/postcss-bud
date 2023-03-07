@@ -2,6 +2,25 @@ const { vW, vH, yE, xE } = require("./constants");
 const { round } = require("./utils");
 const { convertValue } = require("./logic-helper");
 
+function centreRoot(rule) {
+  const important = true;
+  const book = true;
+  rule.append({
+    prop: "left",
+    value: "50%",
+    important, book,
+  }, {
+    prop: "top",
+    value: "50%",
+    important, book,
+  }, {
+    prop: "transform",
+    value: "translate(-50%, -50%)",
+    important, book,
+  });
+  rule.book = true;
+}
+
 /** 转换高度包含块相关的属性 */
 function convertHeightContainingBlock(decl, viewportHeight, precision, fixed) {
   const prop = decl.prop;
@@ -110,7 +129,7 @@ function convert(decl, viewportWidth, precision) {
 }
 
 /** 生成根选择器，定义变量 */
-function genRootSelector(Rule, viewportWidth, viewportHeight, unitPrecision) {
+function genVarsRule(Rule, viewportWidth, viewportHeight, unitPrecision) {
   const rootSelector = new Rule({ selector: ":root" });
   const whRadio = round(viewportWidth / viewportHeight, unitPrecision);
   const hwRadio = round(viewportHeight / viewportWidth, unitPrecision);
@@ -136,7 +155,8 @@ function genRootSelector(Rule, viewportWidth, viewportHeight, unitPrecision) {
 
 module.exports = {
   convert,
-  genRootSelector,
+  genVarsRule,
   convertHeightContainingBlock,
   convertWidthContainingBlock,
+  centreRoot,
 };

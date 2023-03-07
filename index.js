@@ -1,5 +1,5 @@
 const { hasNoneRootContainingBlockComment, hasRootContainingBlockComment, createContainingBlockWidthDecls, createContainingBlockHeightDecls } = require("./src/logic-helper");
-const { convert, genRootSelector, convertWidthContainingBlock, convertHeightContainingBlock } = require("./src/css-generator");
+const { convert, genVarsRule, convertWidthContainingBlock, convertHeightContainingBlock, centreRoot } = require("./src/css-generator");
 const { pxTestReg } = require("./src/regex");
 
 const defaults = {
@@ -10,10 +10,12 @@ const defaults = {
     /** 设计图高度 */
     height: 1080,
   },
-  /** 根元素选择器 */
-  rootSelector: "#app",
+  /** 根元素选择器，如果指定，则将指定选择器居中 */
+  rootSelector: null,
   /** 精确到小数点后几位？ */
   unitPrecision: 3,
+  /** 定义全局变量的注释名称，如果未指定，将判断是否设置根元素选择器，如果设置，全局变量定义在根选择器处，如果未设置，将定义在每个 css 文件开头 */
+  varsComment: null,
 };
 
 module.exports = (options = {}) => {
@@ -22,7 +24,7 @@ module.exports = (options = {}) => {
     ...options,
   };
 
-  const { viewport, rootSelector, unitPrecision } = opts;
+  const { viewport, rootSelector, unitPrecision, varsComment } = opts;
 
   return {
     postcssPlugin: "postcss-bud",
@@ -49,14 +51,29 @@ module.exports = (options = {}) => {
         height: viewHeight,
       } = dynamicViewport;
 
+      let prependedRootVars = false;
+
       viewWHRadio = viewWidth / viewHeight;
       return {
         Once(css, postcss) {
-          /** 根选择器 */
-          const rootRule = genRootSelector(postcss.Rule, viewWidth, viewHeight, unitPrecision);
-          css.append(rootRule);
+          // 在每个文件定义变量
+          if (rootSelector == null && varsComment == null) {
+            const varsRule = genVarsRule(postcss.Rule, viewWidth, viewHeight, unitPrecision);
+            css.prepend(varsRule);
+          }
+        },
+        Comment(comment, postcss) {
+          const text = comment.text;
+          if (text === varsComment && text != null && prependedRootVars === false) {
+            prependedRootVars = true;
+            const varsRule = genVarsRule(postcss.Rule, viewWidth, viewHeight, unitPrecision);
+            result.root.prepend(varsRule);
+            comment.remove();
+          }
         },
         Rule(rule, postcss) {
+          if (rule.book) return ;
+          // console.log(postcss.Root)
           hadFixed = false;
           widthContainingBlockDeclsMap = createContainingBlockWidthDecls();
           heightContainingBlockDeclsMap = createContainingBlockHeightDecls();
@@ -66,7 +83,13 @@ module.exports = (options = {}) => {
 
           // 垂直水平居中根选择器
           if (selector === rootSelector) {
-
+            // 设置了根选择器，没有设置变量标志
+            if (varsComment == null) {
+              const varsRule = genVarsRule(postcss.Rule, viewWidth, viewHeight, unitPrecision);
+              result.root.prepend(varsRule);
+            }
+            // 居中
+            centreRoot(rule);
           }
 
           /** 有标志*非根包含块*的注释吗？ */

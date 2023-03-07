@@ -18,4 +18,6 @@ module.exports = {
   vH: "--vH",
   xE: "--xE",
   yE: "--yE",
+  notRootCBComment: "not-root-containing-block",
+  rootCBComment: "root-containing-block",
 }

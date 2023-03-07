@@ -1,4 +1,4 @@
-const { containingBlockWidthProps, containingBlockHeightProps } = require("./constants");
+const { containingBlockWidthProps, containingBlockHeightProps, rootCBComment, notRootCBComment } = require("./constants");
 const { fixedUnitContentReg, unitContentMatchReg } = require("./regex");
 
 /** 获取匹配的数字和单位，转换 */
