@@ -20,4 +20,5 @@ module.exports = {
   yE: "--yE",
   notRootCBComment: "not-root-containing-block",
   rootCBComment: "root-containing-block",
+  ignorePrevComment: "ignore-prev-bud",
 }

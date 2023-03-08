@@ -28,32 +28,56 @@ const convertValue = (val, {
   return convertedVal.concat(tailChunk);
 };
 
-/** 选择器前面有非根包含块的注释吗 */
-const hasNoneRootContainingBlockComment = (rule) => {
-  let prev = rule.prev();
+/** 当前行是否有注释？ */
+const hasPrevComment = (node, comment, result) => {
+  let bud = false;
+  let next = node.next();
+  do {
+    if (next && next.type === 'comment' && next.text === comment) {
+      if (/\n/.test(next.raws.before)) {
+        result.warn('Unexpected comment /* ' + comment + ' */ must be after declaration at same line.', { node: next });
+      } else {
+        // remove comment
+        next.remove();
+        bud = true;
+      }
+      break;
+    }
+    if (next == null || next.type !== "comment") break;
+  } while(next = next.next())
+  return bud;
+};
+
+/** 前面是否有匹配注释？ */
+const hasNextComment = (node, comment) => {
+  let bud = false;
+  let prev = node.prev();
   if (prev == null) return false;
   do {
-    if (prev && prev.type === 'comment' && prev.text === notRootCBComment) {
+    if (prev && prev.type === 'comment' && prev.text === comment) {
       // remove comment
       prev.remove();
-      return true;
+      bud = true;
+      break;
     }
-    else return false;
+    if (prev == null ||  prev.type !== "comment") break;
   } while(prev = prev.prev())
+  return bud;
+};
+
+/** 本行有忽略注释吗？ */
+const hasPrevIgnoreComment = (decl, comment, result) => {
+  return hasPrevComment(decl, comment, result);
+};
+
+/** 选择器前面有非根包含块的注释吗 */
+const hasNoneRootContainingBlockComment = (rule) => {
+  return hasNextComment(rule, notRootCBComment);
 }
 
 /** 选择器上方有根包含块的注释 */
 const hasRootContainingBlockComment = (rule) => {
-  let prev = rule.prev();
-  if (prev == null) return false;
-  do {
-    if (prev && prev.type === 'comment' && prev.text === rootCBComment) {
-      // remove comment
-      prev.remove();
-      return true;
-    }
-    else return false;
-  } while(prev = prev.prev())
+  return hasNextComment(rule, rootCBComment);
 };
 
 /** 创建 fixed 定位时依赖根元素宽度的属性 map */
@@ -77,4 +101,5 @@ module.exports = {
   createContainingBlockWidthDecls,
   createContainingBlockHeightDecls,
   convertValue,
+  hasPrevIgnoreComment,
 };
