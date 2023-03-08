@@ -73,7 +73,7 @@ const hasPrevIgnoreComment = (decl, comment, result) => {
 /** 选择器前面有非根包含块的注释吗 */
 const hasNoneRootContainingBlockComment = (rule) => {
   return hasNextComment(rule, notRootCBComment);
-}
+};
 
 /** 选择器上方有根包含块的注释 */
 const hasRootContainingBlockComment = (rule) => {
@@ -88,12 +88,64 @@ const createContainingBlockWidthDecls = () => {
   return new Map(mapArray);
 };
 
+/** 创建 fixed 定位时依赖根元素高度的属性 map */
 const createContainingBlockHeightDecls = () => {
   const mapArray = containingBlockHeightProps.reduce((prev, cur) => {
     return prev.concat([[cur, null]]);
   }, []);
   return new Map(mapArray);
-}
+};
+
+/** 检查是否是正则类型或包含正则的数组 */
+const createRegArrayChecker = (TYPE_REG, TYPE_ARY) => (options, optionName) => {
+  const obj2Str = val => Object.prototype.toString.call(val);
+  const option = options[optionName];
+  if (!option) return null;
+  if (obj2Str(option) === '[object RegExp]') return TYPE_REG;
+  if (obj2Str(option) === '[object Array]') {
+    let bad = false;
+    for (let i = 0; i < option.length; ++ i) {
+      if (obj2Str(option[i]) !== '[object RegExp]') {
+        bad = true;
+        break;
+      }
+    }
+    if (!bad) return TYPE_ARY;
+  }
+  throw new Error('options.' + optionName + ' should be RegExp or Array of RegExp.');
+};
+
+/** 如果不包含，则返回 true，不转换 */
+const createIncludeFunc = (TYPE_REG, TYPE_ARY) => (include, file, regOrAry) => {
+  if (include && file) {
+    if (regOrAry === TYPE_REG) {
+      if (!include.test(file)) return true;
+    }
+    if (regOrAry === TYPE_ARY) {
+      let book = false;
+      for (let i = 0; i < include.length; ++ i) {
+        if(include[i].test(file)) {
+          book = true;
+          break;
+        }
+      }
+      if (!book) return true;
+    }
+  }
+};
+
+/** 如果排除，则返回 true，不转换 */
+const createExcludeFunc = (TYPE_REG, TYPE_ARY) => (exclude, file, regOrAry) => {
+  if (exclude && file) {
+    if (regOrAry === TYPE_REG) {
+      if (exclude.test(file)) return true;
+    }
+    if (regOrAry === TYPE_ARY) {
+      for (let i = 0; i < exclude.length; ++ i)
+        if (exclude[i].test(file)) return true;
+    }
+  }
+};
 
 module.exports = {
   hasNoneRootContainingBlockComment,
@@ -102,4 +154,7 @@ module.exports = {
   createContainingBlockHeightDecls,
   convertValue,
   hasPrevIgnoreComment,
+  createRegArrayChecker,
+  createIncludeFunc,
+  createExcludeFunc,
 };

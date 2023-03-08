@@ -1,7 +1,7 @@
-const { hasNoneRootContainingBlockComment, hasRootContainingBlockComment, createContainingBlockWidthDecls, createContainingBlockHeightDecls, hasPrevIgnoreComment } = require("./src/logic-helper");
+const { hasNoneRootContainingBlockComment, hasRootContainingBlockComment, createContainingBlockWidthDecls, createContainingBlockHeightDecls, hasPrevIgnoreComment, createRegArrayChecker, createIncludeFunc, createExcludeFunc } = require("./src/logic-helper");
 const { convert, genVarsRule, convertWidthContainingBlock, convertHeightContainingBlock, centreRoot } = require("./src/css-generator");
 const { pxTestReg } = require("./src/regex");
-const { ignorePrevComment } = require("./src/constants");
+const { ignorePrevComment, TYPE_REG, TYPE_ARY } = require("./src/constants");
 
 const defaults = {
   /** 设计图尺寸 */
@@ -21,7 +21,20 @@ const defaults = {
     /** 定义注释名称，标记则不对当前行进行转换 */
     ignorePrev: null,
   },
+  /** 哪些文件需要转换？ */
+  include: null,
+  /** 哪些文件不需要转换？ */
+  exclude: null,
 };
+
+/** 检查是否是正则类型或包含正则的数组 */
+const checkRegExpOrArray = createRegArrayChecker(TYPE_REG, TYPE_ARY);
+
+/** 如果不包含，则返回 true，不转换 */
+const hasNoIncludeFile = createIncludeFunc(TYPE_REG, TYPE_ARY);
+
+/** 如果排除，则返回 true，不转换 */
+const hasExcludeFile = createExcludeFunc(TYPE_REG, TYPE_ARY);
 
 module.exports = (options = {}) => {
   const opts = {
@@ -33,16 +46,24 @@ module.exports = (options = {}) => {
     }
   };
 
-  const { viewport, rootSelector, unitPrecision, comment } = opts;
+  const { viewport, rootSelector, unitPrecision, comment, include, exclude } = opts;
 
   const { vars, ignorePrev } = comment;
 
   const _ignorePrev = ignorePrev == null ? ignorePrevComment : ignorePrev;
 
+  const excludeType = checkRegExpOrArray(opts, "exclude");
+  const includeType = checkRegExpOrArray(opts, "include");
+
   return {
     postcssPlugin: "postcss-bud",
     prepare(result) {
       const file = result.root && result.root.source && result.root.source.input.file;
+
+      // 包含文件
+      if(hasNoIncludeFile(include, file, includeType)) return;
+      // 排除文件
+      if(hasExcludeFile(exclude, file, excludeType)) return;
 
       /** 当前选择器 */
       let selector = null;

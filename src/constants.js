@@ -21,4 +21,6 @@ module.exports = {
   notRootCBComment: "not-root-containing-block",
   rootCBComment: "root-containing-block",
   ignorePrevComment: "ignore-prev-bud",
+  TYPE_REG: "regex",
+  TYPE_ARY: "array",
 }

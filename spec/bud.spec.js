@@ -2,8 +2,9 @@ var postcss = require("postcss");
 var bud = require("..");
 var { r } = require("./utils");
 
+const rootSelector = ":root { --vW: min(calc(100vh * 1.778), 100vw); --vH: min(calc(100vw * 0.563), 100vh); --yE: calc(50% - var(--vH) / 2); --xE: calc(50% - var(--vW) / 2); }";
+
 describe("bud", function() {
-  const rootSelector = ":root { --vW: min(calc(100vh * 1.778), 100vw); --vH: min(calc(100vw * 0.563), 100vh); --yE: calc(50% - var(--vH) / 2); --xE: calc(50% - var(--vW) / 2); }";
   it("should gen root selector", function() {
     var input = "";
     var output = ":root { --vW: min(calc(100vh * 1.778), 100vw); --vH: min(calc(100vw * 0.563), 100vh); --yE: calc(50% - var(--vH) / 2); --xE: calc(50% - var(--vW) / 2) }";
@@ -27,7 +28,6 @@ describe("bud", function() {
 });
 
 describe("fixed position", function() {
-  const rootSelector = ":root { --vW: min(calc(100vh * 1.778), 100vw); --vH: min(calc(100vw * 0.563), 100vh); --yE: calc(50% - var(--vH) / 2); --xE: calc(50% - var(--vW) / 2); }";
 
   it("should convert positive left or right prop", function() {
     var input = ".rule { position: fixed; left: 192px; }";
@@ -38,7 +38,6 @@ describe("fixed position", function() {
 });
 
 describe("comment", function() {
-  const rootSelector = ":root { --vW: min(calc(100vh * 1.778), 100vw); --vH: min(calc(100vw * 0.563), 100vh); --yE: calc(50% - var(--vH) / 2); --xE: calc(50% - var(--vW) / 2); }";
 
   it("should add root selector when set varsComment", function() {
     var input = "/* kelly-time */ .rule { position: fixed; left: 192px; }";
@@ -56,12 +55,98 @@ describe("comment", function() {
 });
 
 describe("rootSelector", function() {
-  const rootSelector = ":root { --vW: min(calc(100vh * 1.778), 100vw); --vH: min(calc(100vw * 0.563), 100vh); --yE: calc(50% - var(--vH) / 2); --xE: calc(50% - var(--vW) / 2); }";
 
   it("should centre root selector when specify rootSelector", function() {
     var input = "#app { left: 192px; }";
     var output = rootSelector + " " + "#app { left: calc(var(--vW) * 0.1); left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; position: fixed !important; width: var(--vW) !important; height: var(--vH) !important; }";
     var processed = postcss(bud({ rootSelector: "#app" })).process(input).css;
+    expect(r(processed)).toBe(output);
+  });
+});
+
+describe("include", function() {
+  it("should be overwritten when include", function() {
+    var input = ".rule { left: 192px; }";
+    var output = rootSelector + " " + ".rule { left: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({ include: /src/, })).process(input, {
+      from: "/src/main.css",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should not be overwritten when missing include", function() {
+    var input = ".rule { left: 192px; }";
+    var output = ".rule { left: 192px; }";
+    var processed = postcss(bud({ include: /src/, })).process(input, {
+      from: "/crs/main.css",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should be overwritten when include array", function() {
+    var input = ".rule { left: 192px; }";
+    var output = rootSelector + " " + ".rule { left: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({ include: [/src/], })).process(input, {
+      from: "/src/main.css",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should not be overwritten when missing include array", function() {
+    var input = ".rule { left: 192px; }";
+    var output = ".rule { left: 192px; }";
+    var processed = postcss(bud({ include: [/src/], })).process(input, {
+      from: "/crs/main.css",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+});
+
+describe("exclude", function() {
+  it("should not be overwritten when exclude", function() {
+    var input = ".rule { left: 192px; }";
+    var output = ".rule { left: 192px; }";
+    var processed = postcss(bud({ exclude: /src/, })).process(input, {
+      from: "/src/main.css",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should be overwritten when missing exclude", function() {
+    var input = ".rule { left: 192px; }";
+    var output = rootSelector + " " + ".rule { left: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({ exclude: /src/, })).process(input, {
+      from: "/crs/main.css",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should not be overwritten when exclude array", function() {
+    var input = ".rule { left: 192px; }";
+    var output = ".rule { left: 192px; }";
+    var processed = postcss(bud({ exclude: [/src/], })).process(input, {
+      from: "/src/main.css",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should not be overwritten when missing exclude array", function() {
+    var input = ".rule { left: 192px; }";
+    var output = rootSelector + " " + ".rule { left: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({ exclude: [/src/], })).process(input, {
+      from: "/crs/main.css",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+});
+
+describe("include and exclude", function() {
+  it("should not convert when include and exclude nothing", function() {
+    var input = ".rule { left: 192px; }";
+    var output = ".rule { left: 192px; }";
+    var processed = postcss(bud({ exclude: [], include: [], })).process(input, {
+      from: "/src/main.css",
+    }).css;
     expect(r(processed)).toBe(output);
   });
 });
