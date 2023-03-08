@@ -2,6 +2,7 @@ const { vW, vH, yE, xE } = require("./constants");
 const { round } = require("./utils");
 const { convertValue } = require("./logic-helper");
 
+/** 居中根选择器所在元素 */
 function centreRoot(rule) {
   const important = true;
   const book = true;
@@ -16,6 +17,18 @@ function centreRoot(rule) {
   }, {
     prop: "transform",
     value: "translate(-50%, -50%)",
+    important, book,
+  }, {
+    prop: "position",
+    value: "fixed",
+    important, book,
+  }, {
+    prop: "width",
+    value: `var(${vW})`,
+    important, book,
+  }, {
+    prop: "height",
+    value: `var(${vH})`,
     important, book,
   });
   rule.book = true;
