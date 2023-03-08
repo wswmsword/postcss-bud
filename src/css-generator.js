@@ -47,9 +47,11 @@ function convertHeightContainingBlock(decl, viewportHeight, precision, fixed) {
       else if (unit === "%") {
         if (fixed) {
           if (topOrBottom) {
-            return `calc(var(${yE}) + var(${vH}) * ${number})`;
+            const rounded = round(number / 100, precision);
+            return `calc(var(${yE}) + var(${vH}) * ${rounded})`;
           } else {
-            return `calc(var(${vH}) * ${number})`;
+            const rounded = round(number / 100, precision);
+            return `calc(var(${vH}) * ${rounded})`;
           }
         } else {
           return `${numberStr}${unit}`;
@@ -93,9 +95,11 @@ function convertWidthContainingBlock(decl, viewportWidth, precision, fixed) {
       else if (unit === "%") {
         if (fixed) {
           if (leftOrRight) {
-            return `calc(var(${xE}) + var(${vW}) * ${number})`;
+            const rounded = round(number / 100, precision);
+            return `calc(var(${xE}) + var(${vW}) * ${rounded})`;
           } else {
-            return `calc(var(${vW}) * ${number})`;
+            const rounded = round(number / 100, precision);
+            return `calc(var(${vW}) * ${rounded})`;
           }
         } else {
           return `${numberStr}${unit}`;
