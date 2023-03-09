@@ -37,6 +37,51 @@ describe("fixed position", function() {
   });
 });
 
+describe("viewport", function() {
+  it("should pass function to set viewport width and height dynamically", function() {
+    var input = ".rule { left: 384px; }";
+    var output = rootSelector + ' ' + ".rule { left: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({
+      viewport: (file) => file.includes("haha")
+      ? { width: 3840, height: 2160 }
+      : { width: 1920, height: 1080 }
+    })).process(input, {
+      from: "haha",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should pass function to set viewport width and height dynamically but missing file", function() {
+    var input = ".rule { left: 192px; }";
+    var output = rootSelector + ' ' + ".rule { left: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({
+      viewport: (file) => file.includes("haha")
+      ? { width: 3840, height: 2160 }
+      : { width: 1920, height: 1080 }
+    })).process(input, {
+      from: "555",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+});
+
+describe("unitPrecision", function() {
+  it("should convert 3 digits after point by default", function() {
+    var input = ".rule { left: 666px; }";
+    var output = rootSelector + ' ' + ".rule { left: calc(var(--vW) * 0.347); }";
+    var processed = postcss(bud({})).process(input).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should convert 5 digits after point", function() {
+    const rootVars5Digits = ":root { --vW: min(calc(100vh * 1.77778), 100vw); --vH: min(calc(100vw * 0.5625), 100vh); --yE: calc(50% - var(--vH) / 2); --xE: calc(50% - var(--vW) / 2); }";
+    var input = ".rule { left: 666px; }";
+    var output = rootVars5Digits + ' ' + ".rule { left: calc(var(--vW) * 0.34688); }";
+    var processed = postcss(bud({ unitPrecision: 5, })).process(input).css;
+    expect(r(processed)).toBe(output);
+  });
+});
+
 describe("comment", function() {
 
   it("should add root selector when set varsComment", function() {
