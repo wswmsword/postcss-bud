@@ -62,6 +62,20 @@ describe("rootSelector", function() {
     var processed = postcss(bud({ rootSelector: "#app" })).process(input).css;
     expect(r(processed)).toBe(output);
   });
+
+  it("should not centre when specify nothing", function() {
+    var input = "#app { left: 192px; }";
+    var output = rootSelector + " " + "#app { left: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({ rootSelector: null })).process(input).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should not centre when missing rootSelector", function() {
+    var input = "#app { left: 192px; }";
+    var output = "#app { left: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({ rootSelector: "#root" })).process(input).css;
+    expect(r(processed)).toBe(output);
+  });
 });
 
 describe("include", function() {
@@ -146,6 +160,90 @@ describe("include and exclude", function() {
     var output = ".rule { left: 192px; }";
     var processed = postcss(bud({ exclude: [], include: [], })).process(input, {
       from: "/src/main.css",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+});
+
+describe("root vars selector", function() {
+  
+  it("should generate root vars in head of file without specify rootSelector or vars-comment", function() {
+    var input = "#app { left: 192px; }";
+    var output = rootSelector + ' ' + "#app { left: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({})).process(input, {
+      from: "okk",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should generate root-vars in head of file when specify rootSelector", function() {
+    var input = "#app { left: 192px; }";
+    var output = rootSelector + ' ' + "#app { left: calc(var(--vW) * 0.1); left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; position: fixed !important; width: var(--vW) !important; height: var(--vH) !important; }";
+    var processed = postcss(bud({ rootSelector: "#app" })).process(input, {
+      from: "okk",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should not generate when specify missing rootSelector", function() {
+    var input = "#app { left: 192px; }";
+    var output = "#app { left: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({ rootSelector: "#root" })).process(input, {
+      from: "okk",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should generate root-vars in head of file when set vars-comment", function() {
+    var input = "#app { left: 192px; } /* haha */ .rule { width: 192px; }";
+    var output = rootSelector + ' ' + "#app { left: calc(var(--vW) * 0.1); } .rule { width: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({ comment: { vars: "haha" } })).process(input, {
+      from: "okk",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should generate only root-vars in head of file when apply multi vars-comment", function() {
+    var input = "/* haha */ #app { left: 192px; } /* haha */ .rule { width: 192px; }";
+    var output = rootSelector + ' ' + "#app { left: calc(var(--vW) * 0.1); } /* haha */ .rule { width: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({ comment: { vars: "haha" } })).process(input, {
+      from: "okk",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should not generate when set missing vars-comment", function() {
+    var input = "#app { left: 192px; } /* haha */ .rule { width: 192px; }";
+    var output = "#app { left: calc(var(--vW) * 0.1); } /* haha */ .rule { width: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({ comment: { vars: "555" } })).process(input, {
+      from: "okk",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should generate root-vars in head of file when specify rootSelector and vars-comment", function() {
+    var input = "#app { left: 192px; } /* haha */ .rule { width: 192px; }";
+    var output = rootSelector + ' ' + "#app { left: calc(var(--vW) * 0.1); left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; position: fixed !important; width: var(--vW) !important; height: var(--vH) !important; } .rule { width: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({ comment: { vars: "haha" }, rootSelector: "#app" })).process(input, {
+      from: "okk",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should generate root-vars in head of file when specify rootSelector and vars-comment but missing rootSelector", function() {
+    var input = "#app { left: 192px; } /* haha */ .rule { width: 192px; }";
+    var output = rootSelector + ' ' + "#app { left: calc(var(--vW) * 0.1); } .rule { width: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({ comment: { vars: "haha" }, rootSelector: "#root" })).process(input, {
+      from: "okk",
+    }).css;
+    expect(r(processed)).toBe(output);
+  });
+
+  it("should not generate root-vars when specify rootSelector and vars-comment but missing vars-comment", function() {
+    var input = "#app { left: 192px; } /* 555 */ .rule { width: 192px; }";
+    var output = "#app { left: calc(var(--vW) * 0.1); left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; position: fixed !important; width: var(--vW) !important; height: var(--vH) !important; } /* 555 */ .rule { width: calc(var(--vW) * 0.1); }";
+    var processed = postcss(bud({ comment: { vars: "haha" }, rootSelector: "#app" })).process(input, {
+      from: "okk",
     }).css;
     expect(r(processed)).toBe(output);
   });
