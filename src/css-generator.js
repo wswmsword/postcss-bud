@@ -147,7 +147,7 @@ function convert(decl, viewportWidth, precision) {
 
 /** 生成根选择器，定义变量 */
 function genVarsRule(Rule, viewportWidth, viewportHeight, unitPrecision) {
-  const rootSelector = new Rule({ selector: ":root" });
+  const rootSelector = new Rule({ selector: ":root", book: true });
   const whRadio = round(viewportWidth / viewportHeight, unitPrecision);
   const hwRadio = round(viewportHeight / viewportWidth, unitPrecision);
   rootSelector.append({
