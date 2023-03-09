@@ -67,8 +67,6 @@ module.exports = (options = {}) => {
 
       /** 当前选择器 */
       let selector = null;
-      /** 视图的横宽比 */
-      let viewWHRadio = null;
       /** 当前元素是否 fixed 定位？ */
       let hadFixed = null;
       /** 依赖根包含块宽度的属性 */
@@ -86,8 +84,7 @@ module.exports = (options = {}) => {
       } = dynamicViewport;
 
       let prependedRootVars = false;
-
-      viewWHRadio = viewWidth / viewHeight;
+      let walkedRule = false;
       return {
         Once(css, postcss) {
           // 在每个文件定义变量
@@ -132,8 +129,11 @@ module.exports = (options = {}) => {
           /** 有标志*根包含块*的注释吗？ */
           const hadRootContainingBlock = hasRootContainingBlockComment(rule);
           if (hadRootContainingBlock) hadFixed = true;
+
+          walkedRule = true;
         },
         Declaration(decl, postcss) {
+          if (!walkedRule) return;
           if (decl.book) return;
 
           const prop = decl.prop;
@@ -164,14 +164,17 @@ module.exports = (options = {}) => {
             convert(decl, viewWidth, unitPrecision);
         },
         RuleExit(rule, postcss) {
-          widthContainingBlockDeclsMap.forEach(decl => {
-            if (decl == null) return;
-            convertWidthContainingBlock(decl, viewWidth, unitPrecision, hadFixed);
-          });
-          heightContainingBlockDeclsMap.forEach(decl => {
-            if (decl == null) return;
-            convertHeightContainingBlock(decl, viewHeight, unitPrecision, hadFixed);
-          });
+          if (walkedRule) {
+            walkedRule = false;
+            widthContainingBlockDeclsMap.forEach(decl => {
+              if (decl == null) return;
+              convertWidthContainingBlock(decl, viewWidth, unitPrecision, hadFixed);
+            });
+            heightContainingBlockDeclsMap.forEach(decl => {
+              if (decl == null) return;
+              convertHeightContainingBlock(decl, viewHeight, unitPrecision, hadFixed);
+            });
+          }
         },
         OnceExit(css) {
         },

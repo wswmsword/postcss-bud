@@ -25,6 +25,13 @@ describe("bud", function() {
     var processed = postcss(bud()).process(input).css;
     expect(r(processed)).toBe(output);
   });
+
+  it("should not convert declaration inside at-rule", function() {
+    var input = "@font-face { left: 192px; }";
+    var output = rootSelector + " " + "@font-face { left: 192px; }";
+    var processed = postcss(bud()).process(input).css;
+    expect(r(processed)).toBe(output);
+  });
 });
 
 describe("fixed position", function() {
