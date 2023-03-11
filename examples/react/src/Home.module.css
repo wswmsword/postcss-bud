@@ -65,3 +65,23 @@
   color: rgb(48, 48, 48);
   font-size: 24px;
 }
+
+.conerbox {
+  position: absolute;
+  right: 22px;
+  top: 22px;
+  width: 79px;
+  height: 79px;
+  border-radius: 12px;
+  background-color: rgb(48, 48, 48);
+}
+
+.conerbox2 {
+  position: absolute;
+  right: 22px;
+  bottom: 22px;
+  width: 158px;
+  height: 158px;
+  border-radius: 12px;
+  background-color: rgb(48, 48, 48);
+}

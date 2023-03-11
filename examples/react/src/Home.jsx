@@ -38,6 +38,8 @@ const Hello = () => {
         <pre><code>{box}</code></pre>
       </div>
     </div>
+    <div className={styles.conerbox}></div>
+    <div className={styles.conerbox2}></div>
   </div>
 };
 
