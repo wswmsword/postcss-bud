@@ -2,7 +2,7 @@
 
 <img src="https://postcss.github.io/postcss/logo.svg" alt="PostCSS" width="90" height="90" align="right">
 
-一款 PostCSS 插件，用于保持视图横竖居中于屏幕。您可以[查看在线范例](https://wswmsword.github.io/examples/bud/react)。
+一款 PostCSS 插件，用于保持视图横竖居中于屏幕。您可以[查看在线范例](https://wswmsword.github.io/examples/bud/react)以了解使用效果。
 
 ## 安装
 
