@@ -22,7 +22,7 @@ yarn add -D postcss postcss-bud
 </summary>
 
 ```javascript
-import dataScreen from 'postcss-mobile-forever' // <---- 这里
+import dataScreen from 'postcss-bud' // <---- 这里
 import autoprefixer from 'autoprefixer'
 // 省略……
 {
@@ -32,9 +32,9 @@ import autoprefixer from 'autoprefixer'
 			dataScreen({ // <---- 这里
 				rootSelector: '#app',
 				viewport: {
-          width: 1920,
-          height: 1080,
-        },
+					width: 1920,
+					height: 1080,
+				},
 			}),
 		],
 	},
@@ -45,7 +45,7 @@ import autoprefixer from 'autoprefixer'
 
 ## 演示效果
 
-下面的动图展示了使用本插件后，左右半屏，上下半屏，以及全屏下，视图始终居中的效果：
+下面的图片展示了使用本插件后，左右半屏，上下半屏，以及全屏下，视图始终居中的效果：
 
 <table>
 	<tr>
@@ -70,7 +70,7 @@ import autoprefixer from 'autoprefixer'
 
 | Name | Type | isRequired | Default | Desc |
 |:--|:--|:--|:--|:--|
-| viewport | number\|(file: string, selector: string) => { width: number; height: number; } | N | 750 | 设计图宽度，可以传递函数动态生成设计图宽度，例如 `file => file.includes("vant") ? 375 : 750` 表示在名称包含“vant”的文件内使用 375 的设计图宽度 |
+| viewport | number\|(file: string, selector: string) => { width: number; height: number; } | N | 750 | 设计图宽度，可以传递函数动态生成设计图宽度，例如 `file => file.includes("vant") ? { width: 777, height: 888, } : { width: 1920, height: 1080, }` 表示在名称包含“vant”的文件内使用 777*888 的设计图尺寸 |
 | viewport.width | number | N | 1920 | 设计图宽度 |
 | viewport.height | number | N | 1920 | 设计图宽度 |
 | rootSelector | string | N | null | 根元素选择器，如果指定，则将制定选择器居中 |

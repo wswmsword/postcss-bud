@@ -1,7 +1,7 @@
 {
   "name": "postcss-bud",
   "version": "1.0.0",
-  "description": "一款 PostCSS 插件，居中视图。The viewport of data-visualization.",
+  "description": "一款 PostCSS 插件，用于保持视图横竖居中于屏幕。The viewport of data-visualization.",
   "main": "index.js",
   "types": "postcss-bud.d.ts",
   "scripts": {
