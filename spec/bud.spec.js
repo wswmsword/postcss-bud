@@ -5,6 +5,13 @@ var { r } = require("./utils");
 const rootSelector = ":root { --vW: min(calc(100vh * 1.778), 100vw); --vH: min(calc(100vw * 0.563), 100vh); --yE: calc(50% - var(--vH) / 2); --xE: calc(50% - var(--vW) / 2); }";
 
 describe("bud", function() {
+  it("should convert readme", function() {
+    var input = ".petal { width: 1920px; height: 540px; } .bud { width: 36px; height: 36px; position: fixed; bottom: 0; right: 0; }";
+    var output = ":root { --vW: min(calc(100vh * 1.778), 100vw); --vH: min(calc(100vw * 0.563), 100vh); --yE: calc(50% - var(--vH) / 2); --xE: calc(50% - var(--vW) / 2); } .petal { width: calc(var(--vW) * 1); height: calc(var(--vH) * 0.5); } .bud { width: calc(var(--vW) * 0.019); height: calc(var(--vH) * 0.033); position: fixed; bottom: var(--yE); right: var(--xE); }";
+    var processed = postcss(bud()).process(input).css;
+    expect(r(processed)).toBe(output);
+  });
+
   it("should gen root selector", function() {
     var input = "";
     var output = ":root { --vW: min(calc(100vh * 1.778), 100vw); --vH: min(calc(100vw * 0.563), 100vh); --yE: calc(50% - var(--vH) / 2); --xE: calc(50% - var(--vW) / 2) }";
