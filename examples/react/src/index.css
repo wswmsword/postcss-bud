@@ -2,9 +2,4 @@ body {
   margin: 0;
 }
 
-#root {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-}
+#root {}
